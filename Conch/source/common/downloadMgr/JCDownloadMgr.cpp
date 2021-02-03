@@ -331,7 +331,7 @@ namespace laya{
                 pQuery->mstrLocalFile = p_pLocalFile;
             }
             if (p_nPriority == 1 || nThNum == 1)
-                m_ThreadPool.sendToThread(pQuery, 0);
+                m_ThreadPool.sendToThread(pQuery, 0);  //设置到线程中并立即执行
             else {
                 nTh %= (nThNum - 1);
                 m_ThreadPool.sendToThread(pQuery, nTh + 1);

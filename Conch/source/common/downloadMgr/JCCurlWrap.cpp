@@ -550,7 +550,7 @@ namespace laya{
             int connTimeout = p_nConnTimeout==0? 8: p_nConnTimeout;
             set_ConnectTimeout(connTimeout);
 
-            m_nCurlRet = curl_easy_perform(m_pCurlHandle);
+            m_nCurlRet = curl_easy_perform(m_pCurlHandle);  //同步执行传输？
             if (!checkResult(p_pszUrl)) {
                 m_Buffer.ClearData();
             }

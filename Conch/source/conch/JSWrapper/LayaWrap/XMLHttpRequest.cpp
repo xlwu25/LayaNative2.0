@@ -179,7 +179,7 @@ namespace laya
     {
         if (!cbref.lock())
             return;       
-        //¼ì²éÒ»ÏÂjs»·¾³
+        //æ£€æŸ¥ä¸€ä¸‹jsç¯å¢ƒ
         if (!pxhr->IsMyJsEnv())
             return;
         if (p_Buff) 
@@ -190,7 +190,7 @@ namespace laya
                 v8::HandleScope scope(v8::Isolate::GetCurrent());
 #endif
                 JsValue ab = createJSAB(p_Buff, p_nLen);
-                pxhr->m_jsfunPostComplete.Call(ab, p_Buff);
+                pxhr->m_jsfunPostComplete.Call(ab, p_Buff); //æ‰§è¡ŒJSå›è°ƒå‡½æ•°
             }
             else 
             {
@@ -200,7 +200,7 @@ namespace laya
                     strBuff.append(p_Buff + 3);
                 }
                 else strBuff = p_Buff;
-                pxhr->m_jsfunPostComplete.Call(strBuff);
+                pxhr->m_jsfunPostComplete.Call(strBuff); //æ‰§è¡ŒJSå›è°ƒå‡½æ•°
             }
             delete p_Buff;
         }
@@ -228,16 +228,16 @@ namespace laya
         char* pBuff = new char[p_Buff.m_nLen + 1];//(bin?0:1)];
         memcpy(pBuff, p_Buff.m_pPtr, p_Buff.m_nLen);
         //if(!bin){
-        pBuff[p_Buff.m_nLen] = 0;	//²»¹ÜÊÇ²»ÊÇ¶ş½øÖÆ¶¼±£»¤Ò»ÏÂ
+        pBuff[p_Buff.m_nLen] = 0;	//ä¸ç®¡æ˜¯ä¸æ˜¯äºŒè¿›åˆ¶éƒ½ä¿æŠ¤ä¸€ä¸‹
         if (curlr != 0 || httpr<200 || httpr>300) 
         {
-            //´íÎó
+            //é”™è¯¯
             pPoster->postToJS(std::bind(_onPostError_JSThread, pxhr, curlr, httpr, callbackref));
         }
         else
         {
             int len = p_Buff.m_nLen;
-            pPoster->postToJS(std::bind(_onPostComplete_JSThread, pxhr, pBuff, len, bBin, callbackref));
+            pPoster->postToJS(std::bind(_onPostComplete_JSThread, pxhr, pBuff, len, bBin, callbackref)); //è°ƒç”¨æ–¹æ³•_onPostComplete_JSThread
         }
     }
     /*
@@ -247,7 +247,7 @@ namespace laya
         bool isfunc = pObj->IsFunction();
         //v8::Persistent<v8::Function>* pFunc = new v8::Persistent<v8::Function>(pIso, v8::Local<v8::Function>::Cast(pObj));
         v8::Persistent<v8::Object>* ppf = weakHoldJsObj(v8::Local<v8::Object>::Cast(pObj));
-        mpJsOnReadyStateChange = (JsFunction*) ppf; //ÊÇ·ñÎ£ÏÕ£¬ĞèÒª²âÊÔ // v8::Persistent<v8::Function>::Cast(*ppf);
+        mpJsOnReadyStateChange = (JsFunction*) ppf; //æ˜¯å¦å±é™©ï¼Œéœ€è¦æµ‹è¯• // v8::Persistent<v8::Function>::Cast(*ppf);
     }
     */
     /*
@@ -304,11 +304,14 @@ namespace laya
     */
     void XMLHttpRequest::setPostCB(JSValueAsParam p_onOK, JSValueAsParam p_onError) 
     {
-        m_jsfunPostComplete.set(oncompleteid, this, p_onOK);
+        //m_jsfunPostCompleteç”¨äºåé¢åœ¨_onPostComplete_JSThreadæ–¹æ³•å›è°ƒï¼Œ_onPostComplete_JSThreadæ–¹æ³•åœ¨_onPostCompleteä¸­è°ƒç”¨
+        m_jsfunPostComplete.set(oncompleteid, this, p_onOK);  //HTTPå®Œæˆå›è°ƒ
         m_jsfunPostComplete.__BindThis(m_This);
-        m_jsfunPostError.set(onerrid, this, p_onError);
+        m_jsfunPostError.set(onerrid, this, p_onError);  //HTTPé”™è¯¯å›è°ƒ
         m_jsfunPostError.__BindThis(m_This);
         std::weak_ptr<int> cbref(m_CallbackRef);
+
+        //m_funcPostCompleteç»‘å®š_onPostCompleteï¼Œç”¨äºpostDataæˆ–getDataæ–¹æ³•ä¸­(download)ç›´æ¥ä¼ å…¥ï¼Œåˆ°downloadæ–¹æ³•ä¸­å˜ä¸º_QueryDownloadå¯¹è±¡çš„mOnEndæ–¹æ³•ï¼Œæ‹¿åˆ°æ•°æ®ä¹‹åmOnEndå­˜åœ¨åˆ™æ‰§è¡Œå›è°ƒ
         m_funcPostComplete = std::bind(_onPostComplete, this, isBin(),m_pCmdPoster, 
             std::placeholders::_1, 
             std::placeholders::_2,
@@ -329,7 +332,7 @@ namespace laya
                 while (it != m_requestHeaders.end())
                 {
                     std::string head = (*it).first;
-                    head += ": ";//±ê×¼ÊÇ¿ÉÒÔÓĞÈÎÒâ¸ö¿Õ¸ñ
+                    head += ": ";//æ ‡å‡†æ˜¯å¯ä»¥æœ‰ä»»æ„ä¸ªç©ºæ ¼
                     head += (*it).second;
                     headers.push_back(head);
                     it++;
@@ -355,12 +358,12 @@ namespace laya
             while (it != m_requestHeaders.end()) 
             {
                 std::string head = (*it).first;
-                head += ": ";//±ê×¼ÊÇ¿ÉÒÔÓĞÈÎÒâ¸ö¿Õ¸ñ
+                head += ": ";//æ ‡å‡†æ˜¯å¯ä»¥æœ‰ä»»æ„ä¸ªç©ºæ ¼
                 head += (*it).second;
                 headers.push_back(head);
                 it++;
             }
-            pdmgr->download(p_sUrl, 0, JCDownloadMgr::defProgressFunc, m_funcPostComplete,0,headers);
+            pdmgr->download(p_sUrl, 0, JCDownloadMgr::defProgressFunc, m_funcPostComplete,0,headers);  //è®¾ç½®å›è°ƒæ–¹æ³•m_funcPostComplete
         }
     }
     void XMLHttpRequest::JsPostData(const char* p_sUrl, JSValueAsParam arg1)
@@ -375,7 +378,7 @@ namespace laya
         }
         else
         {
-            //ÅĞ¶ÏÊÇ·ñÎªstringÀàĞÍ
+            //åˆ¤æ–­æ˜¯å¦ä¸ºstringç±»å‹
             if (__TransferToCpp<char *>::is(arg1))
             {
                 pData = JS_TO_CPP(char*, arg1);
@@ -392,7 +395,7 @@ namespace laya
                 if (bisab)
                 {
                     postData(pdmgr, p_sUrl, pData, nDataLen);
-                    // m_responseTypeCode = ResponseTypeArrayBuffer; ²»ÄÜ¸ù¾İÕâ¸öÀ´¾ø¶Ô·µ»ØÀàĞÍ
+                    // m_responseTypeCode = ResponseTypeArrayBuffer; ä¸èƒ½æ ¹æ®è¿™ä¸ªæ¥ç»å¯¹è¿”å›ç±»å‹
                 }
                 else
                 {

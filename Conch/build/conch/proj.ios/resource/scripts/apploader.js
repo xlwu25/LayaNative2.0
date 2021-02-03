@@ -1630,12 +1630,12 @@ class XMLHttpRequest extends EventTarget {
             }
             onPostLoad.ref = onPostError.ref = null;
         };
-        if (this._method == 'POST' && body) {
+        if (this._method == 'POST' && body) {    //POST
             onPostLoad.ref = onPostError.ref = this.xhr;
-            this.xhr.setPostCB(onPostLoad, onPostError);
+            this.xhr.setPostCB(onPostLoad, onPostError);  //设置回调方法
             this.xhr.postData(this.url, body);
         }
-        else if (this._hasReqHeader) {
+        else if (this._hasReqHeader) {           //GET，当header参数不为空时
             onPostLoad.ref = onPostError.ref = this.xhr;
             this.xhr.setPostCB(onPostLoad, onPostError);
             this.xhr.getData(this.url);
